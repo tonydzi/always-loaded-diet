@@ -13,8 +13,24 @@
 
 | File | Measured behavior |
 |---|---|
-| Auto-memory index (`MEMORY.md`) | **Hard-truncated at 200 lines / 25KB** — the tail is silently dropped, no warning, no signal in-session. (Filed upstream as [anthropics/claude-code#79217](https://github.com/anthropics/claude-code/issues/79217)-adjacent behavior; measure it yourself with a canary file.) |
+| Auto-memory index (`MEMORY.md`) | **Hard-truncated at 200 lines / 25,000 UTF-16 units** — the tail is silently dropped, no warning, no signal in-session. (Filed upstream as [anthropics/claude-code#79217](https://github.com/anthropics/claude-code/issues/79217)-adjacent behavior; measure it yourself with a canary file.) |
 | `CLAUDE.md` | **No truncation observed up to 401,643 bytes** (canary-measured) — it all loads, and you pay tokens for all of it, every session. |
+
+> **The size cap is UTF-16 units, not bytes.** Corrected 2026-08-26 after
+> [@DanceNitra caught it](https://github.com/anthropics/claude-code/issues/82056);
+> this page said "25KB" before. It only matters for non-ASCII, and it matters a lot:
+>
+> | script | UTF-8 bytes | UTF-16 units | bytes per unit |
+> |---|---|---|---|
+> | ASCII | 1 | 1 | 1.00 |
+> | Cyrillic / Latin-1 accented | 2 | 1 | 2.00 |
+> | CJK (BMP) | 3 | 1 | 3.00 |
+> | emoji (astral) | 4 | 2 | 2.00 |
+>
+> So budgeting a Cyrillic index in bytes stops you at ~12,500 units — **half** the
+> headroom you actually have. A CJK index is pruned 3x harder than it needs to be.
+> The 200-line cap is exact either way, and for an all-ASCII index bytes and units
+> coincide, which is why this went unnoticed here.
 
 So the two files fail differently: MEMORY.md **loses your rules silently**; CLAUDE.md **taxes every
 session and dilutes attention**. Both need a diet, for different reasons.
