@@ -23,7 +23,9 @@ thresholds to your host; the numbers below are the ones we run.
 ```markdown
 ## Nightly always-loaded optimizer (one writer, once per night)
 1. Measure first: current size vs thresholds (CLAUDE.md yellow 100KB / red 120KB;
-   MEMORY.md working zone 60-100 lines, hard host cut at 200 lines / 25KB).
+   MEMORY.md working zone 60-100 lines, hard host cut at 200 lines / 25,000 UTF-16
+   units -- units, not bytes: a Cyrillic index budgeted in bytes stops at half its
+   real headroom, a CJK one at a third).
 2. Fold, don't delete: body text that grew inside the index moves to its topic file;
    the index line shrinks to trigger + gist + pointer.
 3. Hub crowded domains: 5+ lines on one domain → one hub file + one index line.
