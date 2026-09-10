@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use always-loaded-diet in research or software, please cite it as below."
+title: "always-loaded-diet"
+type: software
+authors:
+  - family-names: Dziatkovskii
+    given-names: Anton
+    orcid: "https://orcid.org/0000-0001-7408-3054"
+    affiliation: "Palo Alto AI Research Lab"
+repository-code: "https://github.com/tonydzi/always-loaded-diet"
+url: "https://github.com/tonydzi/always-loaded-diet"
+abstract: >-
+  A discipline for the files an agent loads into every session: one nightly writer, measured budgets, pointer-only lines.
