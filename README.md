@@ -32,57 +32,50 @@
 > The 200-line cap is exact either way, and for an all-ASCII index bytes and units
 > coincide, which is why this went unnoticed here.
 
-So the two files fail differently: MEMORY.md **loses your rules silently**; CLAUDE.md **taxes every
-session and dilutes attention**. Both need a diet, for different reasons.
+So the two files fail differently: MEMORY.md **loses your rules silently**; CLAUDE.md **taxes every session and dilutes attention**, and [RULES.md](RULES.md) treats each with its own diet. Both need a diet, for different reasons.
 
-Our session-start cost measurement, one machine, one week: median **102,180 tokens** at session
-start, growing ~20k over 6 days — that growth was almost entirely always-loaded bloat.
+Our session-start cost measurement in 2026, one machine, one week: median **102,180 tokens** at session start, growing ~20k over 6 days — that growth was almost entirely always-loaded bloat.
 
 ## The discipline (what actually works for us)
 
 ### 1. One writer per file — sessions report, never compress
 
-The single most important rule. A nightly optimizer (one scheduled job) is the ONLY thing allowed
-to restructure/compress an always-loaded file. An ordinary session that notices bloat drops
+The single most important rule. A nightly optimizer (one scheduled job) is the ONLY thing [RULES.md](RULES.md) allows to restructure or compress an always-loaded file. An ordinary session that notices bloat drops
 **one report line** ("⚠️ CLAUDE.md 104KB") and moves on. Never inline-compress someone else's
 canon mid-task.
 
 Why: (a) concurrent writers on a synced file = conflict artifacts and lost lines; (b) every LLM
 rewrite is lossy — dozens of small "helpful" compressions per week quietly bleed rules; (c) we
-measured maintenance-as-reflex before instituting this: **296 backup runs and 237 reindex runs in
-7 days, record 52 in a single session** — a once-daily gate killed the parasitic load.
+measured maintenance-as-reflex before instituting this: **296 backup runs and 237 reindex runs in 7 days of 2026, record 52 in a single session** — a once-daily gate killed the parasitic load.
 
 ### 2. Budgets with named thresholds
 
 - CLAUDE.md: **yellow at 100KB, red at 120KB**. Grow freely to yellow; past it, the nightly
-  optimizer folds detail down. The thresholds live in the guard script AND in the file's own
-  header — code mirrors policy, divergence is a bug.
+  optimizer folds detail down. The thresholds live in the guard script, in the file's own header and in [RULES.md](RULES.md) — code mirrors policy, divergence is a bug.
 - MEMORY.md: index only — one line per memory, **≤150 chars**, format `- [Title](file.md) — hook`.
-  Working zone 60-100 lines; hard ceiling well below the 200-line cut so nothing silently dies.
+  Working zone 60-100 lines; hard ceiling well below the 200-line cut so nothing silently dies, as [RULES.md](RULES.md) spells out.
 
 ### 3. Writing a rule is never gated by size
 
-The session that learns a rule MUST write it down even when the file is in the red — a preflight
-guard MEASURES and reports, but never blocks the write. Making room is the night optimizer's job,
+The session that learns a rule MUST write it down even when the file is in the red — [RULES.md](RULES.md) makes the preflight guard MEASURE and report, but never block the write. Making room is the night optimizer's job,
 not the writing session's. A rule lost because "the file was too big" costs more than 2KB of bloat.
 
 ### 4. Structure: pointer lines, hubs, INBOX
 
-- **Every line is trigger + gist + pointer.** The body lives one level down (a topic file, a
+- **Every line is trigger + gist + pointer**, the shape [RULES.md](RULES.md) requires. The body lives one level down (a topic file, a
   docs page); the always-loaded layer holds just enough to know the rule exists and where it lives.
-- **Hub pages for crowded domains** — when one domain accumulates 5+ index lines, they fold into
+- **Hub pages for crowded domains**, per [RULES.md](RULES.md) — when one domain accumulates 5+ index lines, they fold into
   one hub file with one index line pointing at it (spokes stay findable, index stays lean).
-- **INBOX zone, append-only** — new lines land ONLY at the bottom, in a marked INBOX section; the
+- **INBOX zone, append-only** — [RULES.md](RULES.md) lets new lines land ONLY at the bottom, in a marked INBOX section; the
   nightly job re-sorts them into sections and hubs. Sessions never re-organize the file mid-task.
-- **Archive, never delete** — superseded lines move to an archive file (still greppable), and the
+- **Archive, never delete** — under [RULES.md](RULES.md) superseded lines move to an archive file (still greppable), and the
   tail of anything being archived is scanned for `pending|BLOCKED|TODO` so unfinished work
   surfaces instead of dying with the line.
 
 ### 5. Versioning you can audit
 
 The canon file carries a version line in its header (`v4.38.3 · date`), every edit bumps it and
-appends one changelog line (what · why · md5 of the file). When a fleet of machines syncs the
-file, md5 in the changelog is what settles "which version is this node actually running".
+appends one changelog line (what · why · md5 of the file). When a fleet of machines syncs the file, md5 in the changelog is what settles "which version is this node actually running" — the versioning contract is in [RULES.md](RULES.md).
 
 ## Self-diagnosis in 30 seconds
 
@@ -91,8 +84,7 @@ wc -c ~/.claude/CLAUDE.md; wc -l ~/.claude/**/MEMORY.md
 ```
 
 CLAUDE.md over ~100KB, or MEMORY.md within sight of 200 lines → you are already paying the tax,
-and possibly already losing tail lines. Drop a canary line at the very bottom of MEMORY.md and
-check whether the agent can quote it next session.
+and possibly already losing tail lines. Drop a canary line at the very bottom of MEMORY.md and check whether the agent can quote it next session; [RULES.md](RULES.md) calls this the only honest test of the cut.
 
 ## What ships here
 
@@ -130,9 +122,7 @@ We hand free working seeds of our lab tooling to engineer-testers — WhatsApp *
 
 ## 🧩 One piece of a working system
 
-This repository is one piece lifted out of a live operation: one non-technical founder, an AI
-cofounder, and a fleet of machines that reach consensus with each other and wake the human only
-for money or the irreversible. It was extracted after it survived production, not written as a
+This repository is one piece lifted out of a live operation mapped in [SYSTEM.md](https://github.com/tonydzi/tonydzi/blob/main/SYSTEM.md): one non-technical founder, an AI cofounder, and a fleet of machines that reach consensus with each other and wake the human only for money or the irreversible. It was extracted after it survived production, not written as a
 demo — and it runs on its own: nothing here phones home to the rest.
 
 **See how the whole thing fits together → [SYSTEM.md](https://github.com/tonydzi/tonydzi/blob/main/SYSTEM.md)**
@@ -143,7 +133,6 @@ Its closest neighbours in the **memory** layer: [`sqlite-graph-memory`](https://
 
 ## AI contributors
 
-This project is built by a human + AI team, and the git log says so: Claude writes most of
-the code, Codex and Grok review it, Gemini feeds the research. Each is credited on a commit
+This project is built by a human + AI team, and the git log says so under the rules in [AI-CONTRIBUTORS.md](https://github.com/tonydzi/.github/blob/main/AI-CONTRIBUTORS.md): Claude writes most of the code, Codex and Grok review it, Gemini feeds the research. Each is credited on a commit
 **only if its output changed that commit's content** — no decorative credits. Lab-wide
 policy, one source for every repo: [AI-CONTRIBUTORS.md](https://github.com/tonydzi/.github/blob/main/AI-CONTRIBUTORS.md).
