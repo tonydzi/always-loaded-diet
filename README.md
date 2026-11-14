@@ -6,11 +6,11 @@ Rules and measurements for keeping the files your AI coding agent reads at the s
 **What you get:** a drop-in rules file (`RULES.md`) with size budgets, one-writer discipline and canary checks, plus the measured limits behind them.
 
 ## Quick start
-1. Check your sizes: `wc -c CLAUDE.md` (in the folder where it lives) and count the lines of your MEMORY.md index.
+1. Check your sizes. Mac/Linux: `wc -c CLAUDE.md` and `wc -l MEMORY.md`. Windows PowerShell: `(Get-Item CLAUDE.md).Length` and `(Get-Content MEMORY.md).Count`. Run them in the folder where each file lives.
 2. Open `RULES.md` and copy the "For every session" block into your own rules file.
 3. Add a canary line at the very bottom of MEMORY.md, then ask the agent to quote it in a fresh session.
 
-**Done when:** the agent quotes your canary line back, and your index is well under 200 lines.
+**Done when:** in a brand-new session, the agent quotes your canary line back without opening any file (if it has to read the file to find the line, the test proves nothing), and your index is well under 200 lines. If the line is missing, your file is longer than the agent loads: shrink it and repeat.
 
 > Want an AI agent to do it for you? Paste this to Claude Code / Codex / Cursor:
 > "Read the 'For AI agents' section of https://github.com/tonydzi/always-loaded-diet and set it up for me."
@@ -24,7 +24,7 @@ Rules and measurements for keeping the files your AI coding agent reads at the s
 ### Use
 There is nothing to install.
 1. `git clone https://github.com/tonydzi/always-loaded-diet` and read `RULES.md` fully.
-2. Measure first: `wc -c <path to CLAUDE.md>` and `wc -l <path to MEMORY.md>`.
+2. Measure first: bytes of CLAUDE.md and lines of MEMORY.md (`wc -c` / `wc -l`, or in PowerShell `(Get-Item <path>).Length` / `(Get-Content <path>).Count`). The MEMORY.md cap is in UTF-16 units, not bytes, so for non-ASCII text a byte count overstates it.
 3. Copy only the blocks the human approves from `RULES.md` into their rules file. Adjust paths and thresholds.
 4. Do not compress or reorganize the human's files yourself. Report size and propose changes.
 
@@ -32,7 +32,7 @@ There is nothing to install.
 Thresholds live in `RULES.md` (CLAUDE.md yellow 100KB, red 120KB; MEMORY.md index working zone 60 to 100 lines). Ask the human whether to keep these numbers.
 
 ### Verify
-Add one unique line at the very bottom of MEMORY.md, start a fresh session, ask the agent to quote that line. Quoted correctly = the index is below the cut. Missing = shrink the index. This is the canary check described in `RULES.md`.
+Add one unique line (for example `canary-7f3a-<today's date>`) at the very bottom of MEMORY.md, start a fresh session, and ask the agent to quote that line WITHOUT reading any file (tell it to answer from what was loaded at session start; a quote obtained by opening the file proves nothing). Quoted correctly = the index is below the cut. Missing = shrink the index and repeat. This is the canary check described in `RULES.md`. It tests only the cut, not whether the rules you pasted are followed. A session you start yourself in the same folder is the only valid test: do not run it from inside the session that wrote the canary.
 
 ### Uninstall / rollback
 Remove the blocks you pasted from the rules file and delete the canary line. Nothing else was changed.
